@@ -1,0 +1,155 @@
+libdivsufsort - A lightweight suffix-sorting library.
+-----------------------------------------------------
+
+Introduction:
+-------------
+
+libdivsufsort is an open-source library that provides a high
+performance and lightweight suffix-sorting and BWT-construction
+algorithm. For input size n, this algorithm runs in O(n log n)
+worst-case (and average) time using only 5n bytes of memory.
+
+The latest version of libdivsufsort is available at:
+ http://homepage3.nifty.com/wpage/software/libdivsufsort.html
+
+
+License:
+--------
+
+libdivsufsort is released under the MIT/X11 license. See the file
+COPYING for more details.
+
+
+APIs:
+-----
+
+  * Data types
+  typedef int32_t saint_t;
+  typedef int32_t saidx_t;
+  typedef uint8_t sauchar_t;
+
+  * Constructs the suffix array of a given string.
+  * @param T[0..n-1] The input string.
+  * @param SA[0..n] The output array or suffixes.
+  * @param n The length of the given string.
+  * @return 0 if no error occurred, -1 or -2 otherwise.
+  saint_t
+  divsufsort(const sauchar_t *T, saidx_t *SA, saidx_t n);
+
+  * Constructs the burrows-wheeler transformed string of a given string.
+  * @param T[0..n-1] The input string.
+  * @param U[0..n-1] The output string. (can be T)
+  * @param A[0..n] The temporary array. (can be NULL)
+  * @param n The length of the given string.
+  * @return The primary index if no error occurred, -1 or -2 otherwise.
+  saidx_t
+  divbwt(const sauchar_t *T, sauchar_t *U, saidx_t *A, saidx_t n);
+
+  * Constructs the burrows-wheeler transformed string of a given string and suffix array.
+  * @param T[0..n-1] The input string.
+  * @param U[0..n-1] The output string. (can be T)
+  * @param SA[0..n] The suffix array. (can be NULL)
+  * @param n The length of the given string.
+  * @param idx The output primary index.
+  * @return 0 if no error occurred, -1 or -2 otherwise.
+  saint_t
+  bw_transform(const sauchar_t *T, sauchar_t *U, saidx_t *SA,
+               saidx_t n, saidx_t *idx);
+
+  * Inverse BW-transforms a given BWTed string.
+  * @param T[0..n-1] The input string.
+  * @param U[0..n-1] The output string. (can be T)
+  * @param A[0..n] The temporary array. (can be NULL)
+  * @param n The length of the given string.
+  * @param idx The primary index.
+  * @return 0 if no error occurred, -1 or -2 otherwise.
+  saint_t
+  inverse_bw_transform(const sauchar_t *T, sauchar_t *U,
+                       saidx_t *A, saidx_t n, saidx_t idx);
+
+  * Checks the correctness of a given suffix array.
+  * @param T[0..n-1] The input string.
+  * @param SA[0..n] The input suffix array.
+  * @param n The length of the given string.
+  * @param verbose The verbose mode.
+  * @return 0 if no error occurred.
+  saint_t
+  sufcheck(const sauchar_t *T, const saidx_t *SA,
+           saidx_t n, saint_t verbose);
+
+  * Search for the pattern P in the string T.
+  * @param T[0..Tsize-1] The input string.
+  * @param Tsize The length of the given string.
+  * @param P[0..Psize-1] The input pattern string.
+  * @param Psize The length of the given pattern string.
+  * @param SA[0..SAsize-1] The input suffix array.
+  * @param SAsize The length of the given suffix array.
+  * @param idx The output index.
+  * @return The count of matches if no error occurred, -1 otherwise.
+  saidx_t
+  sa_search(const sauchar_t *T, saidx_t Tsize,
+            const sauchar_t *P, saidx_t Psize,
+            const saidx_t *SA, saidx_t SAsize,
+            saidx_t *idx);
+
+  * Search for the character c in the string T.
+  * @param T[0..Tsize-1] The input string.
+  * @param Tsize The length of the given string.
+  * @param SA[0..SAsize-1] The input suffix array.
+  * @param SAsize The length of the given suffix array.
+  * @param c The input character.
+  * @param idx The output index.
+  * @return The count of matches if no error occurred, -1 otherwise.
+  saidx_t
+  sa_simplesearch(const sauchar_t *T, saidx_t Tsize,
+                  const saidx_t *SA, saidx_t SAsize,
+                  saint_t c, saidx_t *idx);
+
+  * Returns the version string of libdivsufsort.
+  * @return the version string.
+  const char *
+  divsufsort_version(void);
+
+
+Benchmark results:
+------------------
+
+http://homepage3.nifty.com/wpage/benchmark/index.html
+
+
+Algorithm:
+----------
+
+libdivsufsort uses the following algorithms for suffix sorting.
+  - The improved version of Itho-Tanaka two-stage sorting algorithm. [2][6]
+  - A substring sorting/encoding technique. [1][3]
+  - Maniscalco's tandem repeat sorting algorithm. [5]
+  - Larsson-Sadakane sorting algorithm. [4]
+
+
+References:
+-----------
+
+  1. Stefan Burkhardt and Juha K"arkk"ainen. Fast lightweight suffix
+     array construction and checking. Proceedings of the 14th Annual
+     Symposium on Combinatorial Pattern Matching, LNCS 2676,
+     Springer, pp. 55-69, 2003.
+
+  2. Hideo Itoh and Hozumi Tanaka, An Efficient Method for in Memory
+     Construction of Suffix Arrays, Proceedings of the IEEE String
+     Processing and Information Retrieval Symposium, pp. 81-88, 1999.
+
+  3. Pang Ko and Srinivas Aluru, Space-efficient linear time
+     construction of suffix arrays, Proceedings of the 14th Annual
+     Symposium on Combinatorial Pattern Matching, pp. 200-210, 2003.
+
+  4. Jesper Larsson and Kunihiko Sadakane, Faster suffix sorting.
+     Technical report LU-CS-TR:99-214, Department of Computer
+     Science, Lund University, Sweden, 1999.
+
+  5. Michael Maniscalco, MSufSort.
+     http://www.michael-maniscalco.com/msufsort.htm
+
+  6. Yuta Mori, Short description of improved two-stage suffix sorting
+     algorithm, 2005.
+     http://homepage3.nifty.com/wpage/software/itssort.txt
