@@ -2,7 +2,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([libdivsufsort], [1.2.3], [yiv01157@nifty.com])
+AC_INIT([libdivsufsort], [1.2.3], [yuta.256@gmail.com])
 AC_CONFIG_SRCDIR([include/divsufsort.h.in])
 AC_CONFIG_HEADER([include/config.h])
 AC_CONFIG_AUX_DIR([config])
