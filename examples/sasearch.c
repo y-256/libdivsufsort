@@ -230,6 +230,8 @@ int
 main(int argc, const char *argv[]) {
   int i;
   searchoption_t option;
+  sauchar_t *P;
+  saidx_t Psize;
 
   if(argc <= 1) { _print_usage(argv[0], EXIT_SUCCESS); }
 
@@ -293,8 +295,8 @@ main(int argc, const char *argv[]) {
 
   if(i == argc) { return 0; }
 
-  sauchar_t *P = (sauchar_t *)argv[i];
-  saidx_t Psize = (saidx_t)strlen(argv[i]);
+  P = (sauchar_t *)argv[i];
+  Psize = (saidx_t)strlen(argv[i]);
 
   if(option.flags & SA_HEX_MODE) {
     sauchar_t *newP = malloc(Psize / 2 * sizeof(sauchar_t));

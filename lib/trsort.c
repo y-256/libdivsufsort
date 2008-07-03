@@ -29,7 +29,7 @@
 
 /*- Private Functions -*/
 
-static inline
+static INLINE
 void
 _fixdown(const saidx_t *ISAd, saidx_t *SA, saidx_t i, saidx_t size) {
   saidx_t j, k;
@@ -93,7 +93,7 @@ _insertionsort(const saidx_t *ISAd, saidx_t *first, saidx_t *last) {
   }
 }
 
-static inline
+static INLINE
 saidx_t
 _lg(saidx_t n) {
 static const int log2table[256]= {
@@ -126,7 +126,7 @@ static const int log2table[256]= {
 /*---------------------------------------------------------------------------*/
 
 /* Returns the median of three elements. */
-static inline
+static INLINE
 saidx_t *
 _median3(const saidx_t *ISAd, saidx_t *v1, saidx_t *v2, saidx_t *v3) {
   saidx_t *t;
@@ -139,7 +139,7 @@ _median3(const saidx_t *ISAd, saidx_t *v1, saidx_t *v2, saidx_t *v3) {
 }
 
 /* Returns the median of five elements. */
-static inline
+static INLINE
 saidx_t *
 _median5(const saidx_t *ISAd,
          saidx_t *v1, saidx_t *v2, saidx_t *v3, saidx_t *v4, saidx_t *v5) {
@@ -154,7 +154,7 @@ _median5(const saidx_t *ISAd,
 }
 
 /* Returns the pivot element. */
-static inline
+static INLINE
 saidx_t *
 _pivot(const saidx_t *ISAd, saidx_t *first, saidx_t *last) {
   saidx_t *middle;

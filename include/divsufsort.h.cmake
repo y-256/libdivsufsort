@@ -24,36 +24,42 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _DIVSUFSORT_H_
-#define _DIVSUFSORT_H_
+#ifndef _DIVSUFSORT_H
+#define _DIVSUFSORT_H 1
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#if @_HAVE_INTTYPES_H_@ /* _HAVE_INTTYPES_H_ */
-# include <inttypes.h>
-#else
-# if @_HAVE_STDINT_H_@ /* _HAVE_STDINT_H_ */
-#  include <stdint.h>
+@INCFILE@
+
+#ifndef DIVSUFSORT_API
+# ifdef DIVSUFSORT_BUILD_DLL
+#  define DIVSUFSORT_API @DIVSUFSORT_EXPORT@
 # else
-
-#ifndef _UINT8_T
-#define _UINT8_T
-typedef unsigned char uint8_t;
-#endif /* _UINT8_T */
-#ifndef _INT32_T
-#define _INT32_T
-typedef int int32_t;
-#endif /* _INT32_T */
-
+#  define DIVSUFSORT_API @DIVSUFSORT_IMPORT@
 # endif
 #endif
 
 /*- Datatypes -*/
-typedef int32_t saint_t;
-typedef int32_t saidx_t;
-typedef uint8_t sauchar_t;
+#ifndef SAUCHAR_T
+#define SAUCHAR_T
+typedef @SAUCHAR_TYPE@ sauchar_t;
+#endif /* SAUCHAR_T */
+#ifndef SAINT_T
+#define SAINT_T
+typedef @SAINT32_TYPE@ saint_t;
+#endif /* SAINT_T */
+#ifndef SAIDX_T
+#define SAIDX_T
+typedef @SAINDEX_TYPE@ saidx_t;
+#endif /* SAIDX_T */
+#ifndef PRIdSAINT_T
+#define PRIdSAINT_T @SAINT_PRId@
+#endif /* PRIdSAINT_T */
+#ifndef PRIdSAIDX_T
+#define PRIdSAIDX_T @SAINDEX_PRId@
+#endif /* PRIdSAIDX_T */
 
 
 /*- Prototypes -*/
@@ -65,6 +71,7 @@ typedef uint8_t sauchar_t;
  * @param n The length of the given string.
  * @return 0 if no error occurred, -1 or -2 otherwise.
  */
+DIVSUFSORT_API
 saint_t
 divsufsort(const sauchar_t *T, saidx_t *SA, saidx_t n);
 
@@ -76,6 +83,7 @@ divsufsort(const sauchar_t *T, saidx_t *SA, saidx_t n);
  * @param n The length of the given string.
  * @return The primary index if no error occurred, -1 or -2 otherwise.
  */
+DIVSUFSORT_API
 saidx_t
 divbwt(const sauchar_t *T, sauchar_t *U, saidx_t *A, saidx_t n);
 
@@ -83,17 +91,20 @@ divbwt(const sauchar_t *T, sauchar_t *U, saidx_t *A, saidx_t n);
  * Returns the version of the divsufsort library.
  * @return The version number string.
  */
+DIVSUFSORT_API
 const char *
 divsufsort_version(void);
 
 
 /* Burrows-Wheeler transform. */
+DIVSUFSORT_API
 saint_t
 bw_transform(const sauchar_t *T, sauchar_t *U,
              saidx_t *SA /* can NULL */,
              saidx_t n, saidx_t *idx);
 
 /* Inverse Burrows-Wheeler transform. */
+DIVSUFSORT_API
 saint_t
 inverse_bw_transform(const sauchar_t *T, sauchar_t *U,
                      saidx_t *A /* can NULL */,
@@ -107,11 +118,13 @@ inverse_bw_transform(const sauchar_t *T, sauchar_t *U,
  * @param verbose The verbose mode.
  * @return 0 if no error occurred.
  */
+DIVSUFSORT_API
 saint_t
 sufcheck(const sauchar_t *T, const saidx_t *SA, saidx_t n, saint_t verbose);
 
 
 /* Search for the pattern P in the string T. */
+DIVSUFSORT_API
 saidx_t
 sa_search(const sauchar_t *T, saidx_t Tsize,
           const sauchar_t *P, saidx_t Psize,
@@ -119,6 +132,7 @@ sa_search(const sauchar_t *T, saidx_t Tsize,
           saidx_t *left);
 
 /* Search for the character c in the string T. */
+DIVSUFSORT_API
 saidx_t
 sa_simplesearch(const sauchar_t *T, saidx_t Tsize,
                 const saidx_t *SA, saidx_t SAsize,
@@ -129,4 +143,4 @@ sa_simplesearch(const sauchar_t *T, saidx_t Tsize,
 } /* extern "C" */
 #endif /* __cplusplus */
 
-#endif /* _DIVSUFSORT_H_ */
+#endif /* _DIVSUFSORT_H */

@@ -1,51 +1,31 @@
 -- INSTALL for libdivsufsort
 
-Compilation and Installation:
------------------------------
 
-   The `configure' shell script attempts to guess correct values for
-various system-dependent variables used during compilation.  It uses
-those values to create a `Makefile' in each directory in the
-libdivsufsort source tree. Finally, it creates a shell script
-`config.status' that you can run in the future to recreate the
-current configuration, and a file `config.log' containing compiler
-output (useful mainly for debugging `configure').
+Requirements:
+=============
 
-   The file `configure.ac' is used to create `configure' by a program
-called `autoconf'.  You only need `configure.ac' if you want to change
-it or regenerate `configure' using a newer version of `autoconf'.
-
-The simplest way to compile this package is:
-
-  1. `cd' to the directory containing the package's source code and type
-     `./configure' to configure the package for your system.  If you're
-     using `csh' on an old version of System V, you might need to type
-     `sh ./configure' instead to prevent `csh' from trying to execute
-     `configure' itself.
-
-     Running `configure' takes awhile.  While running, it prints some
-     messages telling which features it is checking for.
-
-  2. Type `make' to compile the package.
-
-  3. Type `make install' to install the library and header files.
-
-  4. You can remove the program binaries and object files from the
-     source code directory by typing `make clean'.  To also remove the
-     files that `configure' created (so you can compile the package for
-     a different kind of computer), type `make distclean'.
+  * CMake version 2.4.2 or newer (http://www.cmake.org/)
+  * A C compiler
+  * Make
 
 
-Compilers and Options:
-----------------------
+Compilation and Installation (with Unix Makefiles):
+===================================================
 
-   Some systems require unusual options for compilation or linking
-that the `configure' script does not know about. You can give
-`configure' initial values for configuration parameters by setting
-variables in the command line or in the environment.  Here
-is an example:
+  1. Create a 'build' directory in the package source directory.
 
-     ./configure CC=c89 CFLAGS=-O2 LIBS=-lposix
+    $ cd libdivsufsort-?.?.?
+    $ mkdir build
+    $ cd build
 
-Run `./configure --help' for details on some of the pertinent
-environment variables.
+  2. Configure the package for your system.
+
+    $ cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="/usr/local" ..
+
+  3. Compile the package.
+
+    $ make
+
+  4. Install the library and header files.
+
+    # make install

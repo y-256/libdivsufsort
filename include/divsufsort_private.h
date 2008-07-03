@@ -24,31 +24,31 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _DIVSUFSORT_PRIVATE_H_
-#define _DIVSUFSORT_PRIVATE_H_
+#ifndef _DIVSUFSORT_PRIVATE_H
+#define _DIVSUFSORT_PRIVATE_H 1
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#ifdef HAVE_CONFIG_H
+#if HAVE_CONFIG_H
 # include "config.h"
 #endif
 #include <assert.h>
 #include <stdio.h>
 #if STDC_HEADERS
 # include <stdlib.h>
-# include <stddef.h>
+# include <string.h>
 #else
 # if HAVE_STDLIB_H
 #  include <stdlib.h>
 # endif
-#endif
-#if HAVE_STRING_H
-# if !STDC_HEADERS && HAVE_MEMORY_H
+# if HAVE_MEMORY_H
 #  include <memory.h>
 # endif
-# include <string.h>
+#endif
+#if HAVE_STDDEF_H
+# include <stddef.h>
 #endif
 #if HAVE_STRINGS_H
 # include <strings.h>

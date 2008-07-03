@@ -10,7 +10,7 @@ algorithm. For input size n, this algorithm runs in O(n log n)
 worst-case (and average) time using only 5n bytes of memory.
 
 The latest version of libdivsufsort is available at:
- http://homepage3.nifty.com/wpage/software/libdivsufsort.html
+ http://libdivsufsort.googlecode.com/
 
 
 License:

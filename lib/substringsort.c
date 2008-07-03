@@ -30,7 +30,7 @@
 /*- Private Functions -*/
 
 /* Compares two suffixes. */
-static inline
+static INLINE
 saint_t
 _compare(const sauchar_t *T,
          const saidx_t *p1, const saidx_t *p2,
@@ -75,7 +75,7 @@ _insertionsort(const sauchar_t *T, const saidx_t *PA,
 
 /*---------------------------------------------------------------------------*/
 
-static inline
+static INLINE
 void
 _fixdown(const sauchar_t *Td, const saidx_t *PA,
          saidx_t *SA, saidx_t i, saidx_t size) {
@@ -123,7 +123,7 @@ _heapsort(const sauchar_t *Td, const saidx_t *PA, saidx_t *SA, saidx_t size) {
 /*---------------------------------------------------------------------------*/
 
 /* Returns the median of three elements. */
-static inline
+static INLINE
 saidx_t *
 _median3(const sauchar_t *Td, const saidx_t *PA,
          saidx_t *v1, saidx_t *v2, saidx_t *v3) {
@@ -137,7 +137,7 @@ _median3(const sauchar_t *Td, const saidx_t *PA,
 }
 
 /* Returns the median of five elements. */
-static inline
+static INLINE
 saidx_t *
 _median5(const sauchar_t *Td, const saidx_t *PA,
          saidx_t *v1, saidx_t *v2, saidx_t *v3, saidx_t *v4, saidx_t *v5) {
@@ -152,7 +152,7 @@ _median5(const sauchar_t *Td, const saidx_t *PA,
 }
 
 /* Returns the pivot element. */
-static inline
+static INLINE
 saidx_t *
 _pivot(const sauchar_t *Td, const saidx_t *PA, saidx_t *first, saidx_t *last) {
   saidx_t *middle;
@@ -181,7 +181,7 @@ _pivot(const sauchar_t *Td, const saidx_t *PA, saidx_t *first, saidx_t *last) {
 
 /*---------------------------------------------------------------------------*/
 
-static inline
+static INLINE
 saidx_t
 _lg(saidx_t n) {
 static const int log2table[256]= {
@@ -212,7 +212,7 @@ static const int log2table[256]= {
 }
 
 /* Binary partition for substrings. */
-static inline
+static INLINE
 saidx_t *
 _substring_partition(const saidx_t *PA,
                      saidx_t *first, saidx_t *last, saidx_t depth) {
@@ -366,7 +366,7 @@ _multikey_introsort(const sauchar_t *T, const saidx_t *PA,
 /*---------------------------------------------------------------------------*/
 
 /* Block swapping */
-static inline
+static INLINE
 void
 _block_swap(saidx_t *first1, saidx_t *first2, saidx_t size) {
   saidx_t *a, *b;

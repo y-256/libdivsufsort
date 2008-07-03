@@ -358,5 +358,5 @@ divbwt(const sauchar_t *T, sauchar_t *U, saidx_t *A, saidx_t n) {
 
 const char *
 divsufsort_version(void) {
-  return PACKAGE_VERSION;
+  return PROJECT_VERSION_FULL;
 }
