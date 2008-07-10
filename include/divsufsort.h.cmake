@@ -67,7 +67,7 @@ typedef @SAINDEX_TYPE@ saidx_t;
 /**
  * Constructs the suffix array of a given string.
  * @param T[0..n-1] The input string.
- * @param SA[0..n] The output array of suffixes.
+ * @param SA[0..n-1] The output array of suffixes.
  * @param n The length of the given string.
  * @return 0 if no error occurred, -1 or -2 otherwise.
  */
@@ -79,7 +79,7 @@ divsufsort(const sauchar_t *T, saidx_t *SA, saidx_t n);
  * Constructs the burrows-wheeler transformed string of a given string.
  * @param T[0..n-1] The input string.
  * @param U[0..n-1] The output string. (can be T)
- * @param A[0..n] The temporary array. (can be NULL)
+ * @param A[0..n-1] The temporary array. (can be NULL)
  * @param n The length of the given string.
  * @return The primary index if no error occurred, -1 or -2 otherwise.
  */
@@ -113,7 +113,7 @@ inverse_bw_transform(const sauchar_t *T, sauchar_t *U,
 /**
  * Checks the correctness of a given suffix array.
  * @param T[0..n-1] The input string.
- * @param SA[0..n] The input suffix array.
+ * @param SA[0..n-1] The input suffix array.
  * @param n The length of the given string.
  * @param verbose The verbose mode.
  * @return 0 if no error occurred.

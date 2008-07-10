@@ -36,16 +36,14 @@ extern "C" {
 #endif
 #include <assert.h>
 #include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
+#if HAVE_STRING_H
 # include <string.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-# if HAVE_MEMORY_H
-#  include <memory.h>
-# endif
+#endif
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#if HAVE_MEMORY_H
+# include <memory.h>
 #endif
 #if HAVE_STDDEF_H
 # include <stddef.h>
@@ -73,57 +71,76 @@ extern "C" {
 #if !defined(ALPHABET_SIZE)
 # define ALPHABET_SIZE (UINT8_MAX + 1)
 #endif
-#if defined(STACK_SIZE) && (STACK_SIZE < 32)
-# undef STACK_SIZE
-#endif
-#if !defined(STACK_SIZE)
-# define STACK_SIZE (64)
-#endif
-#if defined(LOCALMERGE_BUFFERSIZE) && (LOCALMERGE_BUFFERSIZE < 32)
-# undef LOCALMERGE_BUFFERSIZE
-#endif
-#if !defined(LOCALMERGE_BUFFERSIZE)
-# define LOCALMERGE_BUFFERSIZE (256)
-#endif
 /* for divsufsort.c */
 #define BUCKET_A_SIZE (ALPHABET_SIZE)
 #define BUCKET_B_SIZE (ALPHABET_SIZE * ALPHABET_SIZE)
 /* for sssort.c */
-#define SS_INSERTIONSORT_THRESHOLD (8)
-#define SS_BLOCKSIZE (1024)
+#if defined(SS_INSERTIONSORT_THRESHOLD)
+# if SS_INSERTIONSORT_THRESHOLD < 1
+#  undef SS_INSERTIONSORT_THRESHOLD
+#  define SS_INSERTIONSORT_THRESHOLD 1
+# endif
+#else
+# define SS_INSERTIONSORT_THRESHOLD (8)
+#endif
+#if defined(SS_BLOCKSIZE)
+# if SS_BLOCKSIZE < 0
+#  undef SS_BLOCKSIZE
+#  define SS_BLOCKSIZE 0
+# elif 65536 <= SS_BLOCKSIZE
+#  undef SS_BLOCKSIZE
+#  define SS_BLOCKSIZE 65535
+# endif
+#else
+# define SS_BLOCKSIZE (1024)
+#endif
+/* minstacksize = log(SS_BLOCKSIZE) / log(3) * 2 */
+#if SS_BLOCKSIZE == 0
+# if defined(BUILD_DIVSUFSORT64)
+#  define SS_MISORT_STACKSIZE (96)
+# else
+#  define SS_MISORT_STACKSIZE (64)
+# endif
+#elif SS_BLOCKSIZE <= 4096
+# define SS_MISORT_STACKSIZE (16)
+#else
+# define SS_MISORT_STACKSIZE (24)
+#endif
+#if defined(BUILD_DIVSUFSORT64)
+# define SS_SMERGE_STACKSIZE (64)
+#else
+# define SS_SMERGE_STACKSIZE (32)
+#endif
 /* for trsort.c */
-#define LS_INSERTIONSORT_THRESHOLD (8)
 #define TR_INSERTIONSORT_THRESHOLD (8)
+#if defined(BUILD_DIVSUFSORT64)
+# define TR_STACKSIZE (96)
+#else
+# define TR_STACKSIZE (64)
+#endif
 
 
 /*- Macros -*/
 #ifndef SWAP
-# define SWAP(a,b) do { t = (a); (a) = (b); (b) = t; } while(0)
+# define SWAP(_a, _b) do { t = (_a); (_a) = (_b); (_b) = t; } while(0)
 #endif /* SWAP */
 #ifndef MIN
-# define MIN(a,b) (((a) < (b)) ? (a) : (b))
+# define MIN(_a, _b) (((_a) < (_b)) ? (_a) : (_b))
 #endif /* MIN */
 #ifndef MAX
-# define MAX(a,b) (((a) > (b)) ? (a) : (b))
+# define MAX(_a, _b) (((_a) > (_b)) ? (_a) : (_b))
 #endif /* MAX */
-#define STACK_PUSH3(_a, _b, _c)\
-  do {\
-    assert(ssize < STACK_SIZE);\
-    stack[ssize].a = (_a), stack[ssize].b = (_b),\
-    stack[ssize++].c = (_c);\
-  } while(0)
 #define STACK_PUSH(_a, _b, _c, _d)\
   do {\
     assert(ssize < STACK_SIZE);\
     stack[ssize].a = (_a), stack[ssize].b = (_b),\
     stack[ssize].c = (_c), stack[ssize++].d = (_d);\
   } while(0)
-#define STACK_POP3(_a, _b, _c)\
+#define STACK_PUSH5(_a, _b, _c, _d, _e)\
   do {\
-    assert(0 <= ssize);\
-    if(ssize == 0) { return; }\
-    (_a) = stack[--ssize].a, (_b) = stack[ssize].b,\
-    (_c) = stack[ssize].c;\
+    assert(ssize < STACK_SIZE);\
+    stack[ssize].a = (_a), stack[ssize].b = (_b),\
+    stack[ssize].c = (_c), stack[ssize].d = (_d), stack[ssize++].e = (_e);\
   } while(0)
 #define STACK_POP(_a, _b, _c, _d)\
   do {\
@@ -132,24 +149,31 @@ extern "C" {
     (_a) = stack[--ssize].a, (_b) = stack[ssize].b,\
     (_c) = stack[ssize].c, (_d) = stack[ssize].d;\
   } while(0)
+#define STACK_POP5(_a, _b, _c, _d, _e)\
+  do {\
+    assert(0 <= ssize);\
+    if(ssize == 0) { return; }\
+    (_a) = stack[--ssize].a, (_b) = stack[ssize].b,\
+    (_c) = stack[ssize].c, (_d) = stack[ssize].d, (_e) = stack[ssize].e;\
+  } while(0)
 /* for divsufsort.c */
-#define BUCKET_A(c0) bucket_A[(c0)]
+#define BUCKET_A(_c0) bucket_A[(_c0)]
 #if ALPHABET_SIZE == 256
-#define BUCKET_B(c0, c1) (bucket_B[((c1) << 8) | (c0)])
-#define BUCKET_BSTAR(c0, c1) (bucket_B[((c0) << 8) | (c1)])
+#define BUCKET_B(_c0, _c1) (bucket_B[((_c1) << 8) | (_c0)])
+#define BUCKET_BSTAR(_c0, _c1) (bucket_B[((_c0) << 8) | (_c1)])
 #else
-#define BUCKET_B(c0, c1) (bucket_B[(c1) * ALPHABET_SIZE + (c0)])
-#define BUCKET_BSTAR(c0, c1) (bucket_B[(c0) * ALPHABET_SIZE + (c1)])
+#define BUCKET_B(_c0, _c1) (bucket_B[(_c1) * ALPHABET_SIZE + (_c0)])
+#define BUCKET_BSTAR(_c0, _c1) (bucket_B[(_c0) * ALPHABET_SIZE + (_c1)])
 #endif
 
 
 /*- Private Prototypes -*/
-/* substringsort.c */
+/* sssort.c */
 void
-substringsort(const sauchar_t *Td, const saidx_t *PA,
-              saidx_t *first, saidx_t *last,
-              saidx_t *buf, saidx_t bufsize,
-              saidx_t depth, saint_t lastsuffix);
+sssort(const sauchar_t *Td, const saidx_t *PA,
+       saidx_t *first, saidx_t *last,
+       saidx_t *buf, saidx_t bufsize,
+       saidx_t depth, saidx_t n, saint_t lastsuffix);
 /* trsort.c */
 void
 trsort(saidx_t *ISA, saidx_t *SA, saidx_t n, saidx_t depth);
@@ -159,4 +183,4 @@ trsort(saidx_t *ISA, saidx_t *SA, saidx_t n, saidx_t depth);
 } /* extern "C" */
 #endif /* __cplusplus */
 
-#endif /* _DIVSUFSORT_PRIVATE_H_ */
+#endif /* _DIVSUFSORT_PRIVATE_H */

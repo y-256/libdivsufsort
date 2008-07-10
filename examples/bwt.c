@@ -101,9 +101,9 @@ main(int argc, const char *argv[]) {
     rewind(stdin);
   }
 
-  /* Allocate blocksize+4*(blocksize+1) bytes of memory. */
+  /* Allocate 5blocksize bytes of memory. */
   if(((T = malloc(blocksize * sizeof(sauchar_t))) == NULL) ||
-     ((SA = malloc((blocksize + 1) * sizeof(saidx_t))) == NULL)) {
+     ((SA = malloc(blocksize * sizeof(saidx_t))) == NULL)) {
     fprintf(stderr, "%s: Cannot allocate memory.\n", argv[0]);
     exit(EXIT_FAILURE);
   }

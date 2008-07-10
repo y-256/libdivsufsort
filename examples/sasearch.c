@@ -380,7 +380,8 @@ main(int argc, const char *argv[]) {
       exit(EXIT_FAILURE);
     }
     /* Read (n + 1) * sizeof(saidx_t) bytes of data. */
-    if(fread(SA, sizeof(saidx_t), size + 1, fp) != (size + 1)) {
+    SA[0] = size;
+    if(fread(SA + 1, sizeof(saidx_t), size, fp) != size) {
       fprintf(stderr, "%s: %s `%s': ",
         argv[0],
         (ferror(fp) || !feof(fp)) ? "Cannot read from" : "Unexpected EOF in",

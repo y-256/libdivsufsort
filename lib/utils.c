@@ -32,17 +32,17 @@
 /* Binary search for inverse bwt. */
 static
 saidx_t
-_binarysearch(const saidx_t *A, saidx_t len, saidx_t val) {
-  saidx_t half, m;
-  for(m = 0, half = len >> 1;
-      0 < len;
-      len = half, half >>= 1) {
-    if(A[m + half] < val) {
-      m += half + 1;
-      half -= ((len & 1) == 0);
+binarysearch_lower(const saidx_t *A, saidx_t size, saidx_t value) {
+  saidx_t half, i;
+  for(i = 0, half = size >> 1;
+      0 < size;
+      size = half, half >>= 1) {
+    if(A[i + half] < value) {
+      i += half + 1;
+      half -= (size & 1) ^ 1;
     }
   }
-  return m;
+  return i;
 }
 
 
@@ -52,12 +52,13 @@ _binarysearch(const saidx_t *A, saidx_t len, saidx_t val) {
 saint_t
 bw_transform(const sauchar_t *T, sauchar_t *U, saidx_t *SA,
              saidx_t n, saidx_t *idx) {
-  saidx_t *A, i, p;
+  saidx_t *A, i, j, p, t;
   saint_t c;
 
   /* Check arguments. */
   if((T == NULL) || (U == NULL) || (n < 0) || (idx == NULL)) { return -1; }
   if(n <= 1) {
+    if(n == 1) { U[0] = T[0]; }
     *idx = n;
     return 0;
   }
@@ -70,22 +71,32 @@ bw_transform(const sauchar_t *T, sauchar_t *U, saidx_t *SA,
 
   /* BW transform. */
   if(T == U) {
-    for(i = 0; 0 <= (p = A[i] - 1); ++i) {
-      c = T[i];
-      U[i] = (i <= p) ? T[p] : A[p];
-      A[i] = c;
+    t = n;
+    for(i = 0, j = 0; i < n; ++i) {
+      p = t - 1;
+      t = A[i];
+      if(0 <= p) {
+        c = T[j];
+        U[j] = (j <= p) ? T[p] : (sauchar_t)A[p];
+        A[j] = c;
+        j++;
+      } else {
+        *idx = i;
+      }
     }
-    *idx = i;
-    for( ; i < n; ++i) {
-      p = A[i + 1] - 1;
-      c = T[i];
-      U[i] = (i <= p) ? T[p] : A[p];
-      A[i] = c;
+    p = t - 1;
+    if(0 <= p) {
+      c = T[j];
+      U[j] = (j <= p) ? T[p] : (sauchar_t)A[p];
+      A[j] = c;
+    } else {
+      *idx = i;
     }
   } else {
-    for(i = 0; A[i] != 0; ++i) { U[i] = T[A[i] - 1]; }
-    *idx = i;
-    for( ; i < n; ++i)         { U[i] = T[A[i + 1] - 1]; }
+    U[0] = T[n - 1];
+    for(i = 0; A[i] != 0; ++i) { U[i + 1] = T[A[i] - 1]; }
+    *idx = i + 1;
+    for(++i; i < n; ++i) { U[i] = T[A[i] - 1]; }
   }
 
   if(SA == NULL) {
@@ -101,9 +112,10 @@ saint_t
 inverse_bw_transform(const sauchar_t *T, sauchar_t *U, saidx_t *A,
                      saidx_t n, saidx_t idx) {
   saidx_t C[ALPHABET_SIZE];
-  saidx_t D[ALPHABET_SIZE];
+  sauchar_t D[ALPHABET_SIZE];
   saidx_t *B;
-  saidx_t i, k, t, sum;
+  saidx_t i, p;
+  saint_t c, d;
 
   /* Check arguments. */
   if((T == NULL) || (U == NULL) || (n < 0) || (idx < 0) ||
@@ -113,30 +125,27 @@ inverse_bw_transform(const sauchar_t *T, sauchar_t *U, saidx_t *A,
   if(n <= 1) { return 0; }
 
   if((B = A) == NULL) {
-    /* Allocate (n+1)*sizeof(saidx_t) bytes of memory. */
-    if((B = malloc((n + 1) * sizeof(saidx_t))) == NULL) { return -2; }
+    /* Allocate n*sizeof(saidx_t) bytes of memory. */
+    if((B = malloc(n * sizeof(saidx_t))) == NULL) { return -2; }
   }
 
   /* Inverse BW transform. */
-  for(i = 0; i < ALPHABET_SIZE; ++i) { C[i] = 0; }
+  for(c = 0; c < ALPHABET_SIZE; ++c) { C[c] = 0; }
   for(i = 0; i < n; ++i) { ++C[T[i]]; }
-  for(i = 0, sum = 0; i < ALPHABET_SIZE; ++i) {
-    t = C[i];
-    C[i] = sum;
-    sum += t;
-  }
-  B[0] = idx;
-  for(i = 0; i < idx; ++i) { B[++C[T[i]]] = i; }
-  for( ; i < n; ++i)       { B[++C[T[i]]] = i + 1; }
-  for(i = 0, k = 0, t = 0; i < ALPHABET_SIZE; ++i) {
-    if(t != C[i]) {
-      D[k] = i;
-      t = C[k] = C[i];
-      ++k;
+  for(c = 0, d = 0, i = 0; c < ALPHABET_SIZE; ++c) {
+    p = C[c];
+    if(0 < p) {
+      C[c] = i;
+      D[d++] = (sauchar_t)c;
+      i += p;
     }
   }
-  for(i = 0, t = 0; i < n; ++i) {
-    U[i] = D[_binarysearch(C, k, t = B[t])];
+  for(i = 0; i < idx; ++i) { B[C[T[i]]++] = i; }
+  for( ; i < n; ++i)       { B[C[T[i]]++] = i + 1; }
+  for(c = 0; c < d; ++c) { C[c] = C[D[c]]; }
+  for(i = 0, p = idx; i < n; ++i) {
+    U[i] = D[binarysearch_lower(C, d, p)];
+    p = B[p - 1];
   }
 
   if(A == NULL) {
@@ -152,89 +161,83 @@ saint_t
 sufcheck(const sauchar_t *T, const saidx_t *SA,
          saidx_t n, saint_t verbose) {
   saidx_t C[ALPHABET_SIZE];
-  saidx_t i = 0, p, t = 0;
+  saidx_t i, p, q, t;
   saint_t c;
-  saint_t err = 0;
 
-  if(1 <= verbose) { fprintf(stderr, "sufchecker: "); }
+  if(verbose) { fprintf(stderr, "sufcheck: "); }
 
   /* Check arguments. */
-  if((T == NULL) || (SA == NULL) || (n < 0)) { err = -1; }
+  if((T == NULL) || (SA == NULL) || (n < 0)) {
+    if(verbose) { fprintf(stderr, "Invalid arguments.\n"); }
+    return -1;
+  }
+  if(n == 0) {
+    if(verbose) { fprintf(stderr, "Done.\n"); }
+    return 0;
+  }
 
-  /* ranges. */
-  if(err == 0) {
-    for(i = 0; i <= n; ++i) {
-      if((SA[i] < 0) || (n < SA[i])) {
-        err = -2;
-        break;
+  /* check range: [0..n-1] */
+  for(i = 0; i < n; ++i) {
+    if((SA[i] < 0) || (n <= SA[i])) {
+      if(verbose) {
+        fprintf(stderr, "Out of the range [0,%" PRIdSAIDX_T "].\n"
+                        "  SA[%" PRIdSAIDX_T "]=%" PRIdSAIDX_T "\n",
+                        n - 1, i, SA[i]);
       }
+      return -2;
     }
   }
 
-  /* first characters. */
-  if(err == 0) {
-    for(i = 1; i < n; ++i) {
-      if(T[SA[i]] > T[SA[i + 1]]) {
-        err = -3;
-        break;
+  /* check first characters. */
+  for(i = 1; i < n; ++i) {
+    if(T[SA[i - 1]] > T[SA[i]]) {
+      if(verbose) {
+        fprintf(stderr, "Suffixes in wrong order.\n"
+                        "  T[SA[%" PRIdSAIDX_T "]=%" PRIdSAIDX_T "]=%d"
+                        " > T[SA[%" PRIdSAIDX_T "]=%" PRIdSAIDX_T "]=%d\n",
+                        i - 1, SA[i - 1], T[SA[i - 1]], i, SA[i], T[SA[i]]);
       }
+      return -3;
     }
   }
 
-  /* suffixes. */
-  if(err == 0) {
-    for(i = 0; i < ALPHABET_SIZE; ++i) { C[i] = 0; }
-    for(i = 0; i < n; ++i) { ++C[T[i]]; }
-    for(i = 0, p = 1; i < ALPHABET_SIZE; ++i) {
-      t = C[i];
-      C[i] = p;
-      p += t;
-    }
+  /* check suffixes. */
+  for(i = 0; i < ALPHABET_SIZE; ++i) { C[i] = 0; }
+  for(i = 0; i < n; ++i) { ++C[T[i]]; }
+  for(i = 0, p = 0; i < ALPHABET_SIZE; ++i) {
+    t = C[i];
+    C[i] = p;
+    p += t;
+  }
 
-    for(i = 0; i <= n; ++i) {
-      p = SA[i];
-      if(0 < p) {
-        c = T[--p];
-        t = C[c];
-      } else {
-        p = n;
-        c = -1;
-        t = 0;
+  q = C[T[n - 1]];
+  C[T[n - 1]] += 1;
+  for(i = 0; i < n; ++i) {
+    p = SA[i];
+    if(0 < p) {
+      c = T[--p];
+      t = C[c];
+    } else {
+      c = T[p = n - 1];
+      t = q;
+    }
+    if((t < 0) || (p != SA[t])) {
+      if(verbose) {
+        fprintf(stderr, "Suffix in wrong position.\n"
+                        "  SA[%" PRIdSAIDX_T "]=%" PRIdSAIDX_T " or\n"
+                        "  SA[%" PRIdSAIDX_T "]=%" PRIdSAIDX_T "\n",
+                        t, (0 <= t) ? SA[t] : -1, i, SA[i]);
       }
-      if(p != SA[t]) {
-        err = -4;
-        break;
-      }
-      if(0 <= c) {
-        ++C[c];
-        if((n < C[c]) || (T[SA[C[c]]] != c)) { C[c] = -1; }
-      }
+      return -4;
+    }
+    if(t != q) {
+      ++C[c];
+      if((n <= C[c]) || (T[SA[C[c]]] != c)) { C[c] = -1; }
     }
   }
 
-  if(1 <= verbose) {
-    if(err == 0) {
-      fprintf(stderr, "Done.\n");
-    } else if(verbose == 1) {
-      fprintf(stderr, "Error.\n");
-    } else if(err == -1) {
-      fprintf(stderr, "Invalid arguments.\n");
-    } else if(err == -2) {
-      fprintf(stderr, "Out of the range [0,%d].\n  SA[%d]=%d\n",
-        (int)n, (int)i, (int)SA[i]);
-    } else if(err == -3) {
-      fprintf(stderr, "Suffixes in wrong order.\n"
-                      "  T[SA[%d]=%d]=%d > T[SA[%d]=%d]=%d\n",
-        (int)i, (int)SA[i], (int)T[SA[i]],
-        (int)i + 1, (int)SA[i + 1], (int)T[SA[i + 1]]);
-    } else if(err == -4) {
-      fprintf(stderr, "Suffix in wrong position.\n");
-      if(0 <= t) { fprintf(stderr, "  SA[%d]=%d or\n", (int)t, (int)SA[t]); }
-      fprintf(stderr, "  SA[%d]=%d\n", (int)i, (int)SA[i]);
-    }
-  }
-
-  return err;
+  if(1 <= verbose) { fprintf(stderr, "Done.\n"); }
+  return 0;
 }
 
 

@@ -94,9 +94,9 @@ main(int argc, const char *argv[]) {
   rewind(fp);
 #endif
 
-  /* Allocate n+4(n+1) bytes of memory. */
+  /* Allocate 5n bytes of memory. */
   if(((T = malloc(n * sizeof(sauchar_t))) == NULL) ||
-     ((SA = malloc((n + 1) * sizeof(saidx_t))) == NULL)) {
+     ((SA = malloc(n * sizeof(saidx_t))) == NULL)) {
     fprintf(stderr, "%s: Cannot allocate memory.\n", argv[0]);
     exit(EXIT_FAILURE);
   }
@@ -121,7 +121,7 @@ main(int argc, const char *argv[]) {
     (double)(finish - start) / (double)CLOCKS_PER_SEC);
 
   /* Check the suffix array. */
-  if(sufcheck(T, SA, n, 3) != 0) {
+  if(sufcheck(T, SA, n, 1) != 0) {
     exit(EXIT_FAILURE);
   }
 
