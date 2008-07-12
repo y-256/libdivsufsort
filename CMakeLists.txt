@@ -45,6 +45,7 @@ include(ProjectCPack)
 option(BUILD_SHARED_LIBS "Set to OFF to build static libraries" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
 option(USE_OPENMP "Use OpenMP for parallelization" OFF)
+option(WITH_LFS "Enable Large File Support" ON)
 
 ## Build type ##
 if(NOT CMAKE_BUILD_TYPE)

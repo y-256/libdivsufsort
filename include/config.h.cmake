@@ -44,6 +44,25 @@ extern "C" {
 #cmakedefine HAVE_MEMORY_H 1
 #cmakedefine HAVE_SYS_TYPES_H 1
 
+/** for WinIO **/
+#cmakedefine HAVE_IO_H 1
+#cmakedefine HAVE_FCNTL_H 1
+#cmakedefine HAVE__SETMODE 1
+#cmakedefine HAVE_SETMODE 1
+#cmakedefine HAVE__FILENO 1
+#cmakedefine HAVE_FOPEN_S 1
+#cmakedefine HAVE__O_BINARY 1
+#ifndef HAVE__SETMODE
+# if HAVE_SETMODE
+#  define _setmode setmode
+#  define HAVE__SETMODE 1
+# endif
+# if HAVE__SETMODE && !HAVE__O_BINARY
+#  define _O_BINARY 0
+#  define HAVE__O_BINARY 1
+# endif
+#endif
+
 /** for inline **/
 #ifndef INLINE
 # define INLINE @INLINE@

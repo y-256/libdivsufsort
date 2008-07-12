@@ -3,6 +3,7 @@ include(CheckIncludeFile)
 include(CheckSymbolExists)
 include(CheckTypeSize)
 include(CheckFunctionKeywords)
+include(CheckLFS)
 
 ## Checks for header files ##
 check_include_file("inttypes.h" HAVE_INTTYPES_H)
@@ -13,7 +14,6 @@ check_include_file("stdlib.h" HAVE_STDLIB_H)
 check_include_file("string.h" HAVE_STRING_H)
 check_include_file("strings.h" HAVE_STRINGS_H)
 check_include_file("sys/types.h" HAVE_SYS_TYPES_H)
-check_include_file("sys/stat.h" HAVE_SYS_STAT_H)
 if(HAVE_INTTYPES_H)
   set(INCFILE "#include <inttypes.h>")
 elseif(HAVE_STDINT_H)
@@ -23,6 +23,24 @@ else(HAVE_INTTYPES_H)
 endif(HAVE_INTTYPES_H)
 
 ## create configuration files from .cmake file ##
+if(BUILD_EXAMPLES)
+  ## Checks for WinIO ##
+  if(WIN32)
+    check_include_file("io.h" HAVE_IO_H)
+    check_include_file("fcntl.h" HAVE_FCNTL_H)
+    check_symbol_exists("_setmode" "io.h;fcntl.h" HAVE__SETMODE)
+    if(NOT HAVE__SETMODE)
+      check_symbol_exists("setmode" "io.h;fcntl.h" HAVE_SETMODE)
+    endif(NOT HAVE__SETMODE)
+    check_symbol_exists("_fileno" "stdio.h" HAVE__FILENO)
+    check_symbol_exists("fopen_s" "stdio.h" HAVE_FOPEN_S)
+    check_symbol_exists("_O_BINARY" "fcntl.h" HAVE__O_BINARY)
+  endif(WIN32)
+
+  ## Checks for large file support ##
+  check_lfs(WITH_LFS)
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/lfs.h.cmake" "${CMAKE_CURRENT_BINARY_DIR}/lfs.h" @ONLY)
+endif(BUILD_EXAMPLES)
 
 ## generate config.h ##
 check_function_keywords("inline;__inline;__inline__;__declspec(dllexport);__declspec(dllimport)")
