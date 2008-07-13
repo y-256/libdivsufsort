@@ -24,98 +24,184 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
+#if HAVE_CONFIG_H
 # include "config.h"
 #endif
-#include <divsufsort.h>
 #include <stdio.h>
+#if HAVE_STRING_H
+# include <string.h>
+#endif
 #if HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
-#if HAVE_STRING_H
-# if !STDC_HEADERS && HAVE_MEMORY_H
-#  include <memory.h>
-# endif
-# include <string.h>
+#if HAVE_MEMORY_H
+# include <memory.h>
+#endif
+#if HAVE_STDDEF_H
+# include <stddef.h>
 #endif
 #if HAVE_STRINGS_H
 # include <strings.h>
 #endif
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_IO_H && HAVE_FCNTL_H
+# include <io.h>
+# include <fcntl.h>
+#endif
 #include <time.h>
+#include <divsufsort.h>
+#include "lfs.h"
 
+
+static
+size_t
+read_int(FILE *fp, saidx_t *n) {
+  unsigned char c[4];
+  size_t m = fread(c, sizeof(unsigned char), 4, fp);
+  if(m == 4) {
+    *n = (c[0] <<  0) | (c[1] <<  8) |
+         (c[2] << 16) | (c[3] << 24);
+  }
+  return m;
+}
+
+static
+void
+print_help(const char *progname, int status) {
+  fprintf(stderr,
+          "unbwt, an inverse burrows-wheeler transform program, version %s.\n",
+          divsufsort_version());
+  fprintf(stderr, "usage: %s INFILE OUTFILE\n\n", progname);
+  exit(status);
+}
 
 int
 main(int argc, const char *argv[]) {
+  FILE *fp, *ofp;
+  const char *fname, *ofname;
   sauchar_t *T;
-  saidx_t *A, m, n, blocksize, idx;
-  saint_t err;
+  saidx_t *A;
+  LFS_OFF_T n;
+  size_t m;
+  saidx_t pidx;
   clock_t start, finish;
+  saint_t err, blocksize, needclose = 3;
 
-  /* Check argument. */
-  if(argc != 1) {
-    fprintf(stderr,
-      "unbwt, an inverse burrows-wheeler transform program, version %s.\n"
-      , divsufsort_version());
-    fprintf(stderr,
-      "usage: %s < STDIN > STDOUT\n\n"
-      , argv[0]);
-    return 0;
+  /* Check arguments. */
+  if((argc == 1) ||
+     (strcmp(argv[1], "-h") == 0) ||
+     (strcmp(argv[1], "--help") == 0)) { print_help(argv[0], EXIT_SUCCESS); }
+  if(argc != 3) { print_help(argv[0], EXIT_FAILURE); }
+
+  /* Open a file for reading. */
+  if(strcmp(argv[1], "-") != 0) {
+#if HAVE_FOPEN_S
+    if(fopen_s(&fp, fname = argv[1], "rb") != 0) {
+#else
+    if((fp = LFS_FOPEN(fname = argv[1], "rb")) == NULL) {
+#endif
+      fprintf(stderr, "%s: Cannot open file `%s': ", argv[0], fname);
+      perror(NULL);
+      exit(EXIT_FAILURE);
+    }
+  } else {
+#if HAVE__SETMODE && HAVE__FILENO
+    if(_setmode(_fileno(stdin), _O_BINARY) == -1) {
+      fprintf(stderr, "%s: Cannot set mode: ", argv[0]);
+      perror(NULL);
+      exit(EXIT_FAILURE);
+    }
+#endif
+    fp = stdin;
+    fname = "stdin";
+    needclose ^= 1;
   }
 
-  /* Read the blocksize from stdin. */
-  if(fread(&blocksize, sizeof(saidx_t), 1, stdin) != 1) {
-    fprintf(stderr, "%s: %s `stdin': ",
-      argv[0],
-      (ferror(stdin) || !feof(stdin)) ?
-        "Cannot read from" : "Unexpected EOF in");
+  /* Open a file for writing. */
+  if(strcmp(argv[2], "-") != 0) {
+#if HAVE_FOPEN_S
+    if(fopen_s(&ofp, ofname = argv[2], "wb") != 0) {
+#else
+    if((ofp = LFS_FOPEN(ofname = argv[2], "wb")) == NULL) {
+#endif
+      fprintf(stderr, "%s: Cannot open file `%s': ", argv[0], ofname);
+      perror(NULL);
+      exit(EXIT_FAILURE);
+    }
+  } else {
+#if HAVE__SETMODE && HAVE__FILENO
+    if(_setmode(_fileno(stdout), _O_BINARY) == -1) {
+      fprintf(stderr, "%s: Cannot set mode: ", argv[0]);
+      perror(NULL);
+      exit(EXIT_FAILURE);
+    }
+#endif
+    ofp = stdout;
+    ofname = "stdout";
+    needclose ^= 2;
+  }
+
+  /* Read the blocksize. */
+  if(read_int(fp, &blocksize) != 4) {
+    fprintf(stderr, "%s: Cannot read from `%s': ", argv[0], fname);
     perror(NULL);
     exit(EXIT_FAILURE);
   }
 
   /* Allocate 5blocksize bytes of memory. */
-  if(((T = malloc(blocksize * sizeof(sauchar_t))) == NULL) ||
-     ((A = malloc(blocksize * sizeof(saidx_t))) == NULL)) {
+  T = (sauchar_t *)malloc(blocksize * sizeof(sauchar_t));
+  A = (saidx_t *)malloc(blocksize * sizeof(saidx_t));
+  if((T == NULL) || (A == NULL)) {
     fprintf(stderr, "%s: Cannot allocate memory.\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 
-  fprintf(stderr, "UnBWT (blocksize %d) ... ", (int)blocksize);
+  fprintf(stderr, "UnBWT (blocksize %" PRIdSAINT_T ") ... ", blocksize);
   start = clock();
-  for(n = 0; fread(&idx,sizeof(saidx_t),1,stdin)!=0; n += m) {
+  for(n = 0; (m = read_int(fp, &pidx)) != 0; n += m) {
     /* Read blocksize bytes of data. */
-    if((m = fread(T, sizeof(sauchar_t), blocksize, stdin)) == 0) {
-      fprintf(stderr, "%s: Unexpected EOF in `stdin': ", argv[0]);
+    if((m != 4) || ((m = fread(T, sizeof(sauchar_t), blocksize, fp)) == 0)) {
+      fprintf(stderr, "%s: %s `%s': ",
+        argv[0],
+        (ferror(fp) || !feof(fp)) ? "Cannot read from" : "Unexpected EOF in",
+        fname);
       perror(NULL);
       exit(EXIT_FAILURE);
     }
 
     /* Inverse Burrows-Wheeler Transform. */
-    if((err = inverse_bw_transform(T, T, A, m, idx)) != 0) {
-      fprintf(stderr, "%s (inverse_bw_transform): %s.\n",
+    if((err = inverse_bw_transform(T, T, A, m, pidx)) != 0) {
+      fprintf(stderr, "%s (reverseBWT): %s.\n",
         argv[0],
-        (err == -1) ? "Invalid arguments" : "Cannot allocate memory");
+        (err == -1) ? "Invalid data" : "Cannot allocate memory");
       exit(EXIT_FAILURE);
     }
 
     /* Write m bytes of data. */
-    if(fwrite(T, sizeof(sauchar_t), m, stdout) != m) {
-      fprintf(stderr, "%s: Cannot write to `stdout': ", argv[0]);
+    if(fwrite(T, sizeof(sauchar_t), m, ofp) != m) {
+      fprintf(stderr, "%s: Cannot write to `%s': ", argv[0], ofname);
       perror(NULL);
       exit(EXIT_FAILURE);
     }
   }
-  if(ferror(stdin)) {
-    fprintf(stderr, "%s: Cannot read from `stdin': ", argv[0]);
+  if(ferror(fp)) {
+    fprintf(stderr, "%s: Cannot read from `%s': ", argv[0], fname);
     perror(NULL);
     exit(EXIT_FAILURE);
   }
   finish = clock();
-  fprintf(stderr, "%d bytes: %.4f sec\n",
-    (int)n, (double)(finish - start) / (double)CLOCKS_PER_SEC);
+  fprintf(stderr, "%" PRIdOFF_T " bytes: %.4f sec\n",
+    n, (double)(finish - start) / (double)CLOCKS_PER_SEC);
+
+  /* Close files */
+  if(needclose & 1) { fclose(fp); }
+  if(needclose & 2) { fclose(ofp); }
 
   /* Deallocate memory. */
-  free(T);
   free(A);
+  free(T);
 
   return 0;
 }

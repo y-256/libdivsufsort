@@ -24,105 +24,166 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
+#if HAVE_CONFIG_H
 # include "config.h"
 #endif
-#include <divsufsort.h>
 #include <stdio.h>
+#if HAVE_STRING_H
+# include <string.h>
+#endif
 #if HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
-#include <time.h>
-#if HAVE_SYS_STAT_H
-# include <sys/stat.h>
+#if HAVE_MEMORY_H
+# include <memory.h>
 #endif
+#if HAVE_STDDEF_H
+# include <stddef.h>
+#endif
+#if HAVE_STRINGS_H
+# include <strings.h>
+#endif
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_IO_H && HAVE_FCNTL_H
+# include <io.h>
+# include <fcntl.h>
+#endif
+#include <time.h>
+#include <divsufsort.h>
+#include "lfs.h"
 
+
+static
+void
+print_help(const char *progname, int status) {
+  fprintf(stderr,
+          "mksary, a simple suffix array builder, version %s.\n",
+          divsufsort_version());
+  fprintf(stderr, "usage: %s INFILE OUTFILE\n\n", progname);
+  exit(status);
+}
 
 int
 main(int argc, const char *argv[]) {
-  FILE *ifp, *ofp;
+  FILE *fp, *ofp;
+  const char *fname, *ofname;
   sauchar_t *T;
   saidx_t *SA;
-  saidx_t n;
+  LFS_OFF_T n;
   clock_t start, finish;
-#if HAVE_SYS_STAT_H
-  struct stat s;
-#endif
+  saint_t needclose = 3;
 
-  /* Check argument. */
-  if(argc != 3) {
-    fprintf(stderr,
-      "mksary, a simple suffix array builder, version %s.\n"
-      , divsufsort_version());
-    fprintf(stderr,
-      "usage: %s srcFILE dstSA\n\n"
-      , argv[0]);
-    exit(EXIT_FAILURE);
-  }
-
-  /* Get a file's status information. */
-#if HAVE_SYS_STAT_H
-  if(stat(argv[1], &s) != 0) {
-    fprintf(stderr, "%s: Cannot stat file `%s': ", argv[0], argv[1]);
-    perror(NULL);
-    exit(EXIT_FAILURE);
-  }
-  n = s.st_size;
-#endif
+  /* Check arguments. */
+  if((argc == 1) ||
+     (strcmp(argv[1], "-h") == 0) ||
+     (strcmp(argv[1], "--help") == 0)) { print_help(argv[0], EXIT_SUCCESS); }
+  if(argc != 3) { print_help(argv[0], EXIT_FAILURE); }
 
   /* Open a file for reading. */
-  if((ifp = fopen(argv[1], "rb")) == NULL) {
-    fprintf(stderr, "%s: Cannot open file `%s': ", argv[0], argv[1]);
-    perror(NULL);
-    exit(EXIT_FAILURE);
+  if(strcmp(argv[1], "-") != 0) {
+#if HAVE_FOPEN_S
+    if(fopen_s(&fp, fname = argv[1], "rb") != 0) {
+#else
+    if((fp = LFS_FOPEN(fname = argv[1], "rb")) == NULL) {
+#endif
+      fprintf(stderr, "%s: Cannot open file `%s': ", argv[0], fname);
+      perror(NULL);
+      exit(EXIT_FAILURE);
+    }
+  } else {
+#if HAVE__SETMODE && HAVE__FILENO
+    if(_setmode(_fileno(stdin), _O_BINARY) == -1) {
+      fprintf(stderr, "%s: Cannot set mode: ", argv[0]);
+      perror(NULL);
+      exit(EXIT_FAILURE);
+    }
+#endif
+    fp = stdin;
+    fname = "stdin";
+    needclose ^= 1;
   }
 
   /* Open a file for writing. */
-  if((ofp = fopen(argv[2], "wb")) == NULL) {
-    fprintf(stderr, "%s: Cannot open file `%s': ", argv[0], argv[2]);
+  if(strcmp(argv[2], "-") != 0) {
+#if HAVE_FOPEN_S
+    if(fopen_s(&ofp, ofname = argv[2], "wb") != 0) {
+#else
+    if((ofp = LFS_FOPEN(ofname = argv[2], "wb")) == NULL) {
+#endif
+      fprintf(stderr, "%s: Cannot open file `%s': ", argv[0], ofname);
+      perror(NULL);
+      exit(EXIT_FAILURE);
+    }
+  } else {
+#if HAVE__SETMODE && HAVE__FILENO
+    if(_setmode(_fileno(stdout), _O_BINARY) == -1) {
+      fprintf(stderr, "%s: Cannot set mode: ", argv[0]);
+      perror(NULL);
+      exit(EXIT_FAILURE);
+    }
+#endif
+    ofp = stdout;
+    ofname = "stdout";
+    needclose ^= 2;
+  }
+
+  /* Get the file size. */
+  if(LFS_FSEEK(fp, 0, SEEK_END) == 0) {
+    n = LFS_FTELL(fp);
+    rewind(fp);
+    if(n < 0) {
+      fprintf(stderr, "%s: Cannot ftell `%s': ", argv[0], fname);
+      perror(NULL);
+      exit(EXIT_FAILURE);
+    }
+    if(0x7fffffff <= n) {
+      fprintf(stderr, "%s: Input file `%s' is too big.\n", argv[0], fname);
+      exit(EXIT_FAILURE);
+    }
+  } else {
+    fprintf(stderr, "%s: Cannot fseek `%s': ", argv[0], fname);
     perror(NULL);
     exit(EXIT_FAILURE);
   }
 
-#if !HAVE_SYS_STAT_H
-  fseek(ifp, 0, SEEK_END);
-  n = ftell(ifp);
-  rewind(ifp);
-#endif
-
-  /* Allocate 5n bytes of memory. */
-  if(((T = malloc(n * sizeof(sauchar_t))) == NULL) ||
-     ((SA = malloc(n * sizeof(saidx_t))) == NULL)) {
+  /* Allocate 5blocksize bytes of memory. */
+  T = (sauchar_t *)malloc((size_t)n * sizeof(sauchar_t));
+  SA = (saidx_t *)malloc((size_t)n * sizeof(saidx_t));
+  if((T == NULL) || (SA == NULL)) {
     fprintf(stderr, "%s: Cannot allocate memory.\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 
   /* Read n bytes of data. */
-  if(fread(T, sizeof(sauchar_t), n, ifp) != n) {
+  if(fread(T, sizeof(sauchar_t), (size_t)n, fp) != (size_t)n) {
     fprintf(stderr, "%s: %s `%s': ",
       argv[0],
-      (ferror(ifp) || !feof(ifp)) ? "Cannot read from" : "Unexpected EOF in",
-      argv[1]);
+      (ferror(fp) || !feof(fp)) ? "Cannot read from" : "Unexpected EOF in",
+      fname);
     perror(NULL);
     exit(EXIT_FAILURE);
   }
-  fclose(ifp);
+  if(needclose & 1) { fclose(fp); }
 
   /* Construct the suffix array. */
-  fprintf(stderr, "%s: %d bytes ... ", argv[1], (int)n);
+  fprintf(stderr, "%s: %" PRIdOFF_T " bytes ... ", fname, n);
   start = clock();
-  divsufsort(T, SA, n);
+  if(divsufsort(T, SA, (saidx_t)n) != 0) {
+    fprintf(stderr, "%s: Cannot allocate memory.\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
   finish = clock();
-  fprintf(stderr, "%.4f sec\n",
-    (double)(finish - start) / (double)CLOCKS_PER_SEC);
+  fprintf(stderr, "%.4f sec\n", (double)(finish - start) / (double)CLOCKS_PER_SEC);
 
   /* Write the suffix array. */
-  if(fwrite(SA, sizeof(saidx_t), n, ofp) != n) {
-    fprintf(stderr, "%s: Cannot write to `%s': ", argv[0], argv[2]);
+  if(fwrite(SA, sizeof(saidx_t), (size_t)n, ofp) != (size_t)n) {
+    fprintf(stderr, "%s: Cannot write to `%s': ", argv[0], ofname);
     perror(NULL);
     exit(EXIT_FAILURE);
   }
-  fclose(ofp);
+  if(needclose & 2) { fclose(ofp); }
 
   /* Deallocate memory. */
   free(SA);
