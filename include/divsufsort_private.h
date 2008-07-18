@@ -78,7 +78,7 @@ extern "C" {
 #if defined(SS_INSERTIONSORT_THRESHOLD)
 # if SS_INSERTIONSORT_THRESHOLD < 1
 #  undef SS_INSERTIONSORT_THRESHOLD
-#  define SS_INSERTIONSORT_THRESHOLD 1
+#  define SS_INSERTIONSORT_THRESHOLD (1)
 # endif
 #else
 # define SS_INSERTIONSORT_THRESHOLD (8)
@@ -86,10 +86,10 @@ extern "C" {
 #if defined(SS_BLOCKSIZE)
 # if SS_BLOCKSIZE < 0
 #  undef SS_BLOCKSIZE
-#  define SS_BLOCKSIZE 0
-# elif 65536 <= SS_BLOCKSIZE
+#  define SS_BLOCKSIZE (0)
+# elif 32768 <= SS_BLOCKSIZE
 #  undef SS_BLOCKSIZE
-#  define SS_BLOCKSIZE 65535
+#  define SS_BLOCKSIZE (32767)
 # endif
 #else
 # define SS_BLOCKSIZE (1024)

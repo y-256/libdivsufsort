@@ -84,7 +84,7 @@ ss_ilg(saidx_t n) {
 
 #if SS_BLOCKSIZE != 0
 
-static const int sqq_table[256] = {
+static const saint_t sqq_table[256] = {
   0,  16,  22,  27,  32,  35,  39,  42,  45,  48,  50,  53,  55,  57,  59,  61,
  64,  65,  67,  69,  71,  73,  75,  76,  78,  80,  81,  83,  84,  86,  87,  89,
  90,  91,  93,  94,  96,  97,  98,  99, 101, 102, 103, 104, 106, 107, 108, 109,
@@ -108,7 +108,7 @@ saidx_t
 ss_isqrt(saidx_t x) {
   saidx_t y, e;
 
-  if(x >= (65535UL * 65535UL)) { return 65535; }
+  if(x >= (SS_BLOCKSIZE * SS_BLOCKSIZE)) { return SS_BLOCKSIZE; }
   e = (x & 0xffff0000) ?
         ((x & 0xff000000) ?
           24 + lg_table[(x >> 24) & 0xff] :
