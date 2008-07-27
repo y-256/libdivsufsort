@@ -126,7 +126,7 @@ inverse_bw_transform(const sauchar_t *T, sauchar_t *U, saidx_t *A,
 
   if((B = A) == NULL) {
     /* Allocate n*sizeof(saidx_t) bytes of memory. */
-    if((B = malloc(n * sizeof(saidx_t))) == NULL) { return -2; }
+    if((B = (saidx_t *)malloc((size_t)n * sizeof(saidx_t))) == NULL) { return -2; }
   }
 
   /* Inverse BW transform. */

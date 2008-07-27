@@ -1,5 +1,5 @@
 /*
- * divsufsort.h for libdivsufsort
+ * divsufsort@W64BIT@.h for libdivsufsort@W64BIT@
  * Copyright (c) 2003-2008 Yuta Mori All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -24,8 +24,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _DIVSUFSORT_H
-#define _DIVSUFSORT_H 1
+#ifndef _DIVSUFSORT@W64BIT@_H
+#define _DIVSUFSORT@W64BIT@_H 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,16 +50,16 @@ typedef @SAUCHAR_TYPE@ sauchar_t;
 #define SAINT_T
 typedef @SAINT32_TYPE@ saint_t;
 #endif /* SAINT_T */
-#ifndef SAIDX_T
-#define SAIDX_T
-typedef @SAINDEX_TYPE@ saidx_t;
-#endif /* SAIDX_T */
+#ifndef SAIDX@W64BIT@_T
+#define SAIDX@W64BIT@_T
+typedef @SAINDEX_TYPE@ saidx@W64BIT@_t;
+#endif /* SAIDX@W64BIT@_T */
 #ifndef PRIdSAINT_T
 #define PRIdSAINT_T @SAINT_PRId@
 #endif /* PRIdSAINT_T */
-#ifndef PRIdSAIDX_T
-#define PRIdSAIDX_T @SAINDEX_PRId@
-#endif /* PRIdSAIDX_T */
+#ifndef PRIdSAIDX@W64BIT@_T
+#define PRIdSAIDX@W64BIT@_T @SAINDEX_PRId@
+#endif /* PRIdSAIDX@W64BIT@_T */
 
 
 /*- Prototypes -*/
@@ -73,7 +73,7 @@ typedef @SAINDEX_TYPE@ saidx_t;
  */
 DIVSUFSORT_API
 saint_t
-divsufsort(const sauchar_t *T, saidx_t *SA, saidx_t n);
+divsufsort@W64BIT@(const sauchar_t *T, saidx@W64BIT@_t *SA, saidx@W64BIT@_t n);
 
 /**
  * Constructs the burrows-wheeler transformed string of a given string.
@@ -84,8 +84,8 @@ divsufsort(const sauchar_t *T, saidx_t *SA, saidx_t n);
  * @return The primary index if no error occurred, -1 or -2 otherwise.
  */
 DIVSUFSORT_API
-saidx_t
-divbwt(const sauchar_t *T, sauchar_t *U, saidx_t *A, saidx_t n);
+saidx@W64BIT@_t
+divbwt@W64BIT@(const sauchar_t *T, sauchar_t *U, saidx@W64BIT@_t *A, saidx@W64BIT@_t n);
 
 /**
  * Returns the version of the divsufsort library.
@@ -93,54 +93,54 @@ divbwt(const sauchar_t *T, sauchar_t *U, saidx_t *A, saidx_t n);
  */
 DIVSUFSORT_API
 const char *
-divsufsort_version(void);
+divsufsort@W64BIT@_version(void);
 
 
 /* Burrows-Wheeler transform. */
 DIVSUFSORT_API
 saint_t
-bw_transform(const sauchar_t *T, sauchar_t *U,
-             saidx_t *SA /* can NULL */,
-             saidx_t n, saidx_t *idx);
+bw_transform@W64BIT@(const sauchar_t *T, sauchar_t *U,
+             saidx@W64BIT@_t *SA /* can NULL */,
+             saidx@W64BIT@_t n, saidx@W64BIT@_t *idx);
 
 /* Inverse Burrows-Wheeler transform. */
 DIVSUFSORT_API
 saint_t
-inverse_bw_transform(const sauchar_t *T, sauchar_t *U,
-                     saidx_t *A /* can NULL */,
-                     saidx_t n, saidx_t idx);
+inverse_bw_transform@W64BIT@(const sauchar_t *T, sauchar_t *U,
+                     saidx@W64BIT@_t *A /* can NULL */,
+                     saidx@W64BIT@_t n, saidx@W64BIT@_t idx);
 
 /**
  * Checks the correctness of a given suffix array.
  * @param T[0..n-1] The input string.
- * @param SA[0..n-1] The input suffix array.
+ * @param SA[0..n] The input suffix array.
  * @param n The length of the given string.
  * @param verbose The verbose mode.
  * @return 0 if no error occurred.
  */
 DIVSUFSORT_API
 saint_t
-sufcheck(const sauchar_t *T, const saidx_t *SA, saidx_t n, saint_t verbose);
+sufcheck@W64BIT@(const sauchar_t *T, const saidx@W64BIT@_t *SA, saidx@W64BIT@_t n, saint_t verbose);
 
 
 /* Search for the pattern P in the string T. */
 DIVSUFSORT_API
-saidx_t
-sa_search(const sauchar_t *T, saidx_t Tsize,
-          const sauchar_t *P, saidx_t Psize,
-          const saidx_t *SA, saidx_t SAsize,
-          saidx_t *left);
+saidx@W64BIT@_t
+sa_search@W64BIT@(const sauchar_t *T, saidx@W64BIT@_t Tsize,
+          const sauchar_t *P, saidx@W64BIT@_t Psize,
+          const saidx@W64BIT@_t *SA, saidx@W64BIT@_t SAsize,
+          saidx@W64BIT@_t *left);
 
 /* Search for the character c in the string T. */
 DIVSUFSORT_API
-saidx_t
-sa_simplesearch(const sauchar_t *T, saidx_t Tsize,
-                const saidx_t *SA, saidx_t SAsize,
-                saint_t c, saidx_t *left);
+saidx@W64BIT@_t
+sa_simplesearch@W64BIT@(const sauchar_t *T, saidx@W64BIT@_t Tsize,
+                const saidx@W64BIT@_t *SA, saidx@W64BIT@_t SAsize,
+                saint_t c, saidx@W64BIT@_t *left);
 
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* __cplusplus */
 
-#endif /* _DIVSUFSORT_H */
+#endif /* _DIVSUFSORT@W64BIT@_H */

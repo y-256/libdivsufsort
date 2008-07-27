@@ -340,8 +340,8 @@ divsufsort(const sauchar_t *T, saidx_t *SA, saidx_t n) {
   else if(n == 1) { SA[0] = 0; return 0; }
   else if(n == 2) { m = (T[0] < T[1]); SA[m ^ 1] = 0, SA[m] = 1; return 0; }
 
-  bucket_A = malloc(BUCKET_A_SIZE * sizeof(saidx_t));
-  bucket_B = malloc(BUCKET_B_SIZE * sizeof(saidx_t));
+  bucket_A = (saidx_t *)malloc(BUCKET_A_SIZE * sizeof(saidx_t));
+  bucket_B = (saidx_t *)malloc(BUCKET_B_SIZE * sizeof(saidx_t));
 
   /* Suffixsort. */
   if((bucket_A != NULL) && (bucket_B != NULL)) {
@@ -367,9 +367,9 @@ divbwt(const sauchar_t *T, sauchar_t *U, saidx_t *A, saidx_t n) {
   if((T == NULL) || (U == NULL) || (n < 0)) { return -1; }
   else if(n <= 1) { if(n == 1) { U[0] = T[0]; } return n; }
 
-  if((B = A) == NULL) { B = malloc((n + 1) * sizeof(saidx_t)); }
-  bucket_A = malloc(BUCKET_A_SIZE * sizeof(saidx_t));
-  bucket_B = malloc(BUCKET_B_SIZE * sizeof(saidx_t));
+  if((B = A) == NULL) { B = (saidx_t *)malloc((size_t)(n + 1) * sizeof(saidx_t)); }
+  bucket_A = (saidx_t *)malloc(BUCKET_A_SIZE * sizeof(saidx_t));
+  bucket_B = (saidx_t *)malloc(BUCKET_B_SIZE * sizeof(saidx_t));
 
   /* Burrows-Wheeler Transform. */
   if((B != NULL) && (bucket_A != NULL) && (bucket_B != NULL)) {
