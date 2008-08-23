@@ -5,8 +5,8 @@ Requirements:
 =============
 
   * CMake version 2.4.2 or newer (http://www.cmake.org/)
-  * A C compiler
-  * Make
+  * An ANSI C compiler
+  * GNU Make
 
 
 Compilation and Installation (with Unix Makefiles):

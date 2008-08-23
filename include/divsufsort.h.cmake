@@ -96,14 +96,30 @@ const char *
 divsufsort@W64BIT@_version(void);
 
 
-/* Burrows-Wheeler transform. */
+/**
+ * Constructs the burrows-wheeler transformed string of a given string and suffix array.
+ * @param T[0..n-1] The input string.
+ * @param U[0..n-1] The output string. (can be T)
+ * @param SA[0..n-1] The suffix array. (can be NULL)
+ * @param n The length of the given string.
+ * @param idx The output primary index.
+ * @return 0 if no error occurred, -1 or -2 otherwise.
+ */
 DIVSUFSORT_API
 saint_t
 bw_transform@W64BIT@(const sauchar_t *T, sauchar_t *U,
              saidx@W64BIT@_t *SA /* can NULL */,
              saidx@W64BIT@_t n, saidx@W64BIT@_t *idx);
 
-/* Inverse Burrows-Wheeler transform. */
+/**
+ * Inverse BW-transforms a given BWTed string.
+ * @param T[0..n-1] The input string.
+ * @param U[0..n-1] The output string. (can be T)
+ * @param A[0..n-1] The temporary array. (can be NULL)
+ * @param n The length of the given string.
+ * @param idx The primary index.
+ * @return 0 if no error occurred, -1 or -2 otherwise.
+ */
 DIVSUFSORT_API
 saint_t
 inverse_bw_transform@W64BIT@(const sauchar_t *T, sauchar_t *U,
@@ -113,7 +129,7 @@ inverse_bw_transform@W64BIT@(const sauchar_t *T, sauchar_t *U,
 /**
  * Checks the correctness of a given suffix array.
  * @param T[0..n-1] The input string.
- * @param SA[0..n] The input suffix array.
+ * @param SA[0..n-1] The input suffix array.
  * @param n The length of the given string.
  * @param verbose The verbose mode.
  * @return 0 if no error occurred.
@@ -122,8 +138,17 @@ DIVSUFSORT_API
 saint_t
 sufcheck@W64BIT@(const sauchar_t *T, const saidx@W64BIT@_t *SA, saidx@W64BIT@_t n, saint_t verbose);
 
-
-/* Search for the pattern P in the string T. */
+/**
+ * Search for the pattern P in the string T.
+ * @param T[0..Tsize-1] The input string.
+ * @param Tsize The length of the given string.
+ * @param P[0..Psize-1] The input pattern string.
+ * @param Psize The length of the given pattern string.
+ * @param SA[0..SAsize-1] The input suffix array.
+ * @param SAsize The length of the given suffix array.
+ * @param idx The output index.
+ * @return The count of matches if no error occurred, -1 otherwise.
+ */
 DIVSUFSORT_API
 saidx@W64BIT@_t
 sa_search@W64BIT@(const sauchar_t *T, saidx@W64BIT@_t Tsize,
@@ -131,7 +156,16 @@ sa_search@W64BIT@(const sauchar_t *T, saidx@W64BIT@_t Tsize,
           const saidx@W64BIT@_t *SA, saidx@W64BIT@_t SAsize,
           saidx@W64BIT@_t *left);
 
-/* Search for the character c in the string T. */
+/**
+ * Search for the character c in the string T.
+ * @param T[0..Tsize-1] The input string.
+ * @param Tsize The length of the given string.
+ * @param SA[0..SAsize-1] The input suffix array.
+ * @param SAsize The length of the given suffix array.
+ * @param c The input character.
+ * @param idx The output index.
+ * @return The count of matches if no error occurred, -1 otherwise.
+ */
 DIVSUFSORT_API
 saidx@W64BIT@_t
 sa_simplesearch@W64BIT@(const sauchar_t *T, saidx@W64BIT@_t Tsize,

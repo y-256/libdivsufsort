@@ -1,5 +1,12 @@
 -- NEWS for libdivsufsort
 
+Changes in release 2.0.0
+
+  - The build system was changed to CMake. (http://www.cmake.org/)
+  - Improved the performance of the suffix-sorting algorithm.
+  - Added OpenMP support.
+  - Added 64-bit version of divsufsort.
+
 Changes in release 1.2.3
 
   - Bug fixes.
