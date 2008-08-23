@@ -47,19 +47,19 @@ saint_t
 ss_ilg(saidx_t n) {
 #if SS_BLOCKSIZE == 0
 # if defined(BUILD_DIVSUFSORT64)
-  return (n & 0xffffffff00000000) ?
-          ((n & 0xffff000000000000) ?
-            ((n & 0xff00000000000000) ?
+  return (n >> 32) ?
+          ((n >> 48) ?
+            ((n >> 56) ?
               56 + lg_table[(n >> 56) & 0xff] :
               48 + lg_table[(n >> 48) & 0xff]) :
-            ((n & 0x0000ff0000000000) ?
+            ((n >> 40) ?
               40 + lg_table[(n >> 40) & 0xff] :
               32 + lg_table[(n >> 32) & 0xff])) :
-          ((n & 0x00000000ffff0000) ?
-            ((n & 0x00000000ff000000) ?
+          ((n & 0xffff0000) ?
+            ((n & 0xff000000) ?
               24 + lg_table[(n >> 24) & 0xff] :
               16 + lg_table[(n >> 16) & 0xff]) :
-            ((n & 0x000000000000ff00) ?
+            ((n & 0x0000ff00) ?
                8 + lg_table[(n >>  8) & 0xff] :
                0 + lg_table[(n >>  0) & 0xff]));
 # else

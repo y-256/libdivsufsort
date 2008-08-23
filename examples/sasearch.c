@@ -109,8 +109,8 @@ main(int argc, const char *argv[]) {
   }
 
   /* Allocate 5n bytes of memory. */
-  T = malloc((size_t)n * sizeof(sauchar_t));
-  SA = malloc((size_t)n * sizeof(saidx_t));
+  T = (sauchar_t *)malloc((size_t)n * sizeof(sauchar_t));
+  SA = (saidx_t *)malloc((size_t)n * sizeof(saidx_t));
   if((T == NULL) || (SA == NULL)) {
     fprintf(stderr, "%s: Cannot allocate memory.\n", argv[0]);
     exit(EXIT_FAILURE);
