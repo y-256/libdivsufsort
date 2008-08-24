@@ -378,8 +378,8 @@ divbwt(const sauchar_t *T, sauchar_t *U, saidx_t *A, saidx_t n) {
 
     /* Copy to output string. */
     U[0] = T[n - 1];
-    for(i = 0; i < pidx; ++i) { U[i + 1] = (sauchar_t)A[i]; }
-    for(i += 1; i < n; ++i) { U[i] = (sauchar_t)A[i]; }
+    for(i = 0; i < pidx; ++i) { U[i + 1] = (sauchar_t)B[i]; }
+    for(i += 1; i < n; ++i) { U[i] = (sauchar_t)B[i]; }
     pidx += 1;
   } else {
     pidx = -2;
