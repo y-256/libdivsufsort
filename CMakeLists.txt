@@ -1,5 +1,5 @@
 ### cmake file for building libdivsufsort Package ###
-cmake_minimum_required(VERSION 2.4.2)
+cmake_minimum_required(VERSION 2.4)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 include(AppendCompilerFlags)
 
