@@ -1,5 +1,5 @@
 ### cmake file for building libdivsufsort Package ###
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 2.4.4)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 include(AppendCompilerFlags)
 
@@ -47,6 +47,29 @@ option(BUILD_EXAMPLES "Build examples" ON)
 option(BUILD_DIVSUFSORT64 "Build libdivsufsort64" OFF)
 option(USE_OPENMP "Use OpenMP for parallelization" OFF)
 option(WITH_LFS "Enable Large File Support" ON)
+
+## Installation directories ##
+set(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32 or 64)")
+
+set(CMAKE_INSTALL_RUNTIMEDIR "" CACHE PATH "Specify the output directory for dll runtimes (default is bin)")
+if(NOT CMAKE_INSTALL_RUNTIMEDIR)
+  set(CMAKE_INSTALL_RUNTIMEDIR "${CMAKE_INSTALL_PREFIX}/bin")
+endif(NOT CMAKE_INSTALL_RUNTIMEDIR)
+
+set(CMAKE_INSTALL_LIBDIR "" CACHE PATH "Specify the output directory for libraries (default is lib)")
+if(NOT CMAKE_INSTALL_LIBDIR)
+  set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
+endif(NOT CMAKE_INSTALL_LIBDIR)
+
+set(CMAKE_INSTALL_INCLUDEDIR "" CACHE PATH "Specify the output directory for header files (default is include)")
+if(NOT CMAKE_INSTALL_INCLUDEDIR)
+  set(CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include")
+endif(NOT CMAKE_INSTALL_INCLUDEDIR)
+
+set(CMAKE_INSTALL_PKGCONFIGDIR "" CACHE PATH "Specify the output directory for pkgconfig files (default is lib/pkgconfig)")
+if(NOT CMAKE_INSTALL_PKGCONFIGDIR)
+  set(CMAKE_INSTALL_PKGCONFIGDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endif(NOT CMAKE_INSTALL_PKGCONFIGDIR)
 
 ## Build type ##
 if(NOT CMAKE_BUILD_TYPE)
