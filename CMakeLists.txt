@@ -3,38 +3,13 @@ cmake_minimum_required(VERSION 2.4.4)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 include(AppendCompilerFlags)
 
-## SVN revision ##
-set(SVN_REVISION "")
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.svn")
-  execute_process(COMMAND svn info --xml
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    OUTPUT_VARIABLE SVN_INFO ERROR_QUIET)
-  if(SVN_INFO)
-    string(REGEX MATCH "<entry[^>]+" SVN_REVISION "${SVN_INFO}")
-    string(REGEX REPLACE "^.*revision=\"([0-9]+)\".*$" "\\1" SVN_REVISION "${SVN_REVISION}")
-  endif(SVN_INFO)
-endif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.svn")
-
 ## Project information ##
 project(libdivsufsort C)
 set(PROJECT_VENDOR "Yuta Mori")
 set(PROJECT_CONTACT "yuta.256@gmail.com")
 set(PROJECT_URL "http://libdivsufsort.googlecode.com/")
 set(PROJECT_DESCRIPTION "A lightweight suffix sorting library")
-file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" PROJECT_VERSION_FULL)
-string(REGEX REPLACE "[\n\r]" "" PROJECT_VERSION_FULL "${PROJECT_VERSION_FULL}")
-string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+$" "\\1" PROJECT_VERSION_MAJOR "${PROJECT_VERSION_FULL}")
-string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+$" "\\1" PROJECT_VERSION_MINOR "${PROJECT_VERSION_FULL}")
-string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)$" "\\1" PROJECT_VERSION_PATCH "${PROJECT_VERSION_FULL}")
-set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
-math(EXPR LIBRARY_VERSION_MAJOR "1 + ${PROJECT_VERSION_MAJOR}")
-set(LIBRARY_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
-set(LIBRARY_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
-set(LIBRARY_VERSION "${LIBRARY_VERSION_MAJOR}.${LIBRARY_VERSION_MINOR}")
-set(LIBRARY_VERSION_FULL "${LIBRARY_VERSION}.${LIBRARY_VERSION_PATCH}")
-if(SVN_REVISION)
-  set(PROJECT_VERSION_FULL "svn-r${SVN_REVISION}")
-endif(SVN_REVISION)
+include(VERSION.cmake)
 
 ## CPack configuration ##
 set(CPACK_GENERATOR "TGZ;TBZ2;ZIP")
