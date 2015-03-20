@@ -7,7 +7,7 @@ include(AppendCompilerFlags)
 project(libdivsufsort C)
 set(PROJECT_VENDOR "Yuta Mori")
 set(PROJECT_CONTACT "yuta.256@gmail.com")
-set(PROJECT_URL "http://libdivsufsort.googlecode.com/")
+set(PROJECT_URL "https://github.com/y-256/libdivsufsort")
 set(PROJECT_DESCRIPTION "A lightweight suffix sorting library")
 include(VERSION.cmake)
 
